@@ -1,4 +1,4 @@
-# Scribble Arena V2
+# Scribble Arena 
 
 Real-time drawing and guessing game with a React frontend and an in-memory Socket.IO backend.
 
