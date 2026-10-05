@@ -1,0 +1,58 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: ✦
+      - generic [ref=e7]: Scribble Arena
+    - generic [ref=e8]: 1,284 playing now
+  - main [ref=e10]:
+    - generic [ref=e11]:
+      - text: DRAW • GUESS • DOMINATE
+      - heading [level=1] [ref=e12]:
+        - text: Where your
+        - emphasis [ref=e13]: doodles
+        - text: become legends.
+      - paragraph [ref=e14]: A polished drawing party game for friends, classmates, and anyone brave enough to draw a potato.
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - text: Nickname
+          - textbox "Nickname" [ref=e17]:
+            - /placeholder: Enter nickname
+            - text: Ankit
+        - button "Create room" [ref=e18] [cursor=pointer]
+      - generic [ref=e21]:
+        - generic [ref=e22]:
+          - generic [ref=e23]: Have an invite?
+          - generic [ref=e24]: Join a room
+        - textbox "ABCDE" [ref=e25]
+        - button "Join" [ref=e26] [cursor=pointer]
+      - generic [ref=e27]:
+        - generic [ref=e28]: Up to 10 players
+        - generic [ref=e34]: Private rooms
+        - generic [ref=e38]: Free to play
+    - generic [ref=e41]:
+      - generic [ref=e42]:
+        - generic [ref=e43]:
+          - generic [ref=e44]: ✦ scribble arena
+          - generic [ref=e45]: _ _ _ _ _
+        - generic [ref=e54]:
+          - generic [ref=e55]: 🎨
+          - generic [ref=e56]: Riya is drawing...
+          - generic [ref=e57]: ⏱ 47s
+      - generic [ref=e58]:
+        - text: 🐸
+        - generic [ref=e59]: Rahul
+        - generic [ref=e60]: guessed it!
+        - strong [ref=e61]: "+420"
+      - generic [ref=e62]:
+        - text: ROUND 02
+        - generic [ref=e63]: 42s
+  - generic [ref=e64]:
+    - generic [ref=e65]:
+      - generic [ref=e71]: Party ready
+      - generic [ref=e72]: Up to 10 players.
+    - generic [ref=e73]:
+      - generic [ref=e77]: Private rooms
+      - generic [ref=e78]: Share a simple code.
+    - generic [ref=e79]:
+      - generic [ref=e82]: Fast rounds
+      - generic [ref=e83]: No boring downtime.

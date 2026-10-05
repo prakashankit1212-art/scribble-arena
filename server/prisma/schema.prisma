@@ -1,0 +1,186 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoomVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+enum RoomStatus {
+  WAITING
+  ACTIVE
+  FINISHED
+  EXPIRED
+}
+
+enum GameStatus {
+  ACTIVE
+  FINISHED
+  ABORTED
+}
+
+model User {
+  id        String    @id @default(uuid()) @db.Uuid
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  profile   Profile?
+  sessions  Session[]
+  hostedRooms Room[]   @relation("RoomHost")
+  gamePlayers GamePlayer[]
+  guesses   Guess[]
+  wonGames  Game[]    @relation("GameWinner")
+}
+
+model Session {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  sessionHash String  @unique @db.Char(64)
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+  expiresAt  DateTime
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Profile {
+  id                 String   @id @default(uuid()) @db.Uuid
+  userId             String   @unique @db.Uuid
+  username           String   @db.VarChar(18)
+  avatar             String   @default("🦊") @db.VarChar(16)
+  gamesPlayed        Int      @default(0)
+  gamesWon           Int      @default(0)
+  totalScore         Int      @default(0)
+  correctGuesses     Int      @default(0)
+  fastestGuessMs     Int?
+  drawingsCompleted  Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([totalScore(sort: Desc)])
+  @@index([gamesWon(sort: Desc)])
+  @@index([correctGuesses(sort: Desc)])
+  @@index([username])
+}
+
+model Room {
+  code          String         @id @db.VarChar(5)
+  name          String         @db.VarChar(40)
+  hostUserId    String?        @db.Uuid
+  visibility    RoomVisibility @default(PRIVATE)
+  status        RoomStatus     @default(WAITING)
+  settings      Json
+  maxPlayers    Int
+  currentPlayers Int           @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  lastActiveAt  DateTime       @default(now())
+  expiresAt     DateTime?
+  host          User?          @relation("RoomHost", fields: [hostUserId], references: [id], onDelete: SetNull)
+  games         Game[]
+
+  @@index([status])
+  @@index([visibility, status, expiresAt])
+  @@index([hostUserId])
+}
+
+model Game {
+  id          String       @id @default(uuid()) @db.Uuid
+  roomCode    String       @db.VarChar(5)
+  status      GameStatus   @default(ACTIVE)
+  startedAt   DateTime     @default(now())
+  endedAt     DateTime?
+  rounds      Int
+  winnerId    String?      @db.Uuid
+  settings    Json
+  room        Room         @relation(fields: [roomCode], references: [code], onDelete: Restrict)
+  winner      User?        @relation("GameWinner", fields: [winnerId], references: [id], onDelete: SetNull)
+  players     GamePlayer[]
+  roundsData  Round[]
+  guesses     Guess[]
+  drawings    DrawingSummary[]
+
+  @@index([roomCode, startedAt(sort: Desc)])
+  @@index([status, endedAt])
+  @@index([winnerId])
+}
+
+model GamePlayer {
+  id                String   @id @default(uuid()) @db.Uuid
+  gameId            String   @db.Uuid
+  userId            String?  @db.Uuid
+  playerId          String   @db.Uuid
+  username          String   @db.VarChar(18)
+  avatar            String   @db.VarChar(16)
+  color             String   @db.VarChar(7)
+  finalScore        Int      @default(0)
+  correctGuesses    Int      @default(0)
+  roundsWon         Int      @default(0)
+  fastestGuessMs    Int?
+  drawingsCompleted Int      @default(0)
+  game              Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user              User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([gameId, playerId])
+  @@index([userId, gameId])
+  @@index([gameId, finalScore(sort: Desc)])
+}
+
+model Round {
+  id               String   @id @default(uuid()) @db.Uuid
+  gameId           String   @db.Uuid
+  roundNumber      Int
+  drawerUserId     String?  @db.Uuid
+  drawerName       String   @db.VarChar(18)
+  durationSeconds Int
+  selectedWordHash String?  @db.Char(64)
+  scoresAwarded    Json     @default("{}")
+  startedAt        DateTime
+  endedAt          DateTime?
+  game             Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  guesses          Guess[]
+  drawings         DrawingSummary[]
+
+  @@unique([gameId, roundNumber])
+  @@index([drawerUserId])
+}
+
+model Guess {
+  id          String   @id @default(uuid()) @db.Uuid
+  gameId      String   @db.Uuid
+  roundId     String   @db.Uuid
+  userId      String?  @db.Uuid
+  playerId    String   @db.Uuid
+  correct     Boolean
+  points      Int      @default(0)
+  guessedAt   DateTime @default(now())
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  round       Round    @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, correct, guessedAt])
+  @@index([gameId, roundId])
+}
+
+model DrawingSummary {
+  id          String   @id @default(uuid()) @db.Uuid
+  gameId      String   @db.Uuid
+  roundId     String   @db.Uuid
+  userId      String?  @db.Uuid
+  strokeCount Int      @default(0)
+  durationMs  Int      @default(0)
+  createdAt   DateTime @default(now())
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  round       Round    @relation(fields: [roundId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([gameId, roundId])
+}
