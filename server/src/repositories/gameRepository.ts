@@ -98,7 +98,7 @@ export class GameRepository {
 					},
 				});
 			}
-		});
+		}, { maxWait: 10_000, timeout: 30_000 });
 		this.pending.delete(gameId);
 	}
 

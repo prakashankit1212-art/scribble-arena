@@ -1,6 +1,7 @@
 import { ArrowLeft, Crown, RotateCcw, Share2, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '../components/Button';
+import { copyText } from '../lib/clipboard';
 import { Logo } from '../components/Logo';
 import { playAudioCue } from '../services/audioService';
 import type { Player } from '../types/game';
@@ -28,7 +29,7 @@ export function Results({ items, again, home }: ResultsProps) {
 		const summary = ranked.map((player, index) => `${index + 1}. ${player.name}: ${player.score}`).join('\n');
 		try {
 			if (navigator.share) await navigator.share({ title: 'Scribble Arena results', text: summary, url });
-			else await navigator.clipboard.writeText(`${summary}\n${url}`);
+			else if (!await copyText(`${summary}\n${url}`)) throw new Error('Clipboard unavailable');
 			setShareMessage('Results shared.');
 		} catch {
 			setShareMessage('Sharing was cancelled.');

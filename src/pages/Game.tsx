@@ -1,8 +1,9 @@
-import { Clock3, Copy, Info, MessageCircle, Menu, Trophy, Users, Volume2 } from 'lucide-react';
+import { Check, Clock3, Copy, MessageCircle, Menu, Trophy, Users, Volume2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '../components/Button';
 import { Canvas } from '../components/Canvas';
 import { Chat } from '../components/Chat';
+import { copyText } from '../lib/clipboard';
 import { Logo } from '../components/Logo';
 import { Players } from '../components/Players';
 import { isAudioMuted, playAudioCue, setAudioMuted } from '../services/audioService';
@@ -65,9 +66,17 @@ export function Game({
 	const [countdown, setCountdown] = useState<string | null>(null);
 	const [transitionSeconds, setTransitionSeconds] = useState(0);
 	const [muted, setMuted] = useState(isAudioMuted);
+	const [copiedCode, setCopiedCode] = useState(false);
 	const drawer = Boolean(items[0]?.isDrawer);
 	const timerClass = timeLeft <= 5 ? 'timer-critical' : timeLeft <= 15 ? 'timer-warning' : '';
 	const drawerName = items.find((player) => player.id === items.find((candidate) => candidate.isDrawer)?.id)?.name;
+
+	async function copyRoomCode() {
+		if (await copyText(code)) {
+			setCopiedCode(true);
+			window.setTimeout(() => setCopiedCode(false), 1600);
+		}
+	}
 
 	useEffect(() => {
 		if (phase !== 'drawing') {
@@ -116,15 +125,14 @@ export function Game({
 				<div className="round">ROUND <b>{round}</b> / {settings.rounds}<span className={timerClass}><Clock3 size={14} />{formatTime(timeLeft)}</span></div>
 				<div className="game-right">
 					<span className={`connection-status ${connectionStatus}`}>{connectionStatus === 'connected' ? 'CONNECTED' : connectionStatus === 'reconnecting' ? 'RECONNECTING' : 'DISCONNECTED'}</span>
-					<button onClick={() => navigator.clipboard?.writeText(code)}><Copy size={14} />{code}</button>
+					<button aria-label="Copy room code" onClick={copyRoomCode}>{copiedCode ? <Check size={14} /> : <Copy size={14} />}{copiedCode ? 'Copied' : code}</button>
 					<button className="mobile-btn" aria-label="Show players" onClick={() => setPlayersOpen(!playersOpen)}><Menu size={16} /></button>
 				</div>
 			</header>
 			<main className="game-layout">
 				<aside className={`left card ${playersOpen ? 'open' : ''}`}>
-					<header><div><small>ROOM</small><h3>Players</h3></div><div className="chat-header-actions"><Trophy size={17} /><button className="mobile-sheet-close" aria-label="Close players" onClick={() => setPlayersOpen(false)}>×</button></div></header>
+					<header><div><h3>Players</h3></div><div className="chat-header-actions"><Trophy size={17} /><button className="mobile-sheet-close" aria-label="Close players" onClick={() => setPlayersOpen(false)}>×</button></div></header>
 					<Players items={items} feedback={scoreFeedback} />
-					<div className="tip"><Info size={15} />Fast guesses earn more points.</div>
 				</aside>
 				<section className="center">
 					<div className="word">
@@ -133,8 +141,8 @@ export function Game({
 							<strong>{word || (phase === 'word-choice' && !drawer ? 'Waiting for the drawer...' : phase === 'word-choice' ? 'Select one to begin' : 'Get ready')}</strong>
 						</div>
 						{phase === 'word-choice' && drawer
-							? <div className="word-choice-controls"><div className="choice-time" role="status"><span>Choose in</span><b>{choiceTimeLeft}s</b></div><div className="choice-progress"><span style={{ width: `${Math.max(0, Math.min(100, (choiceTimeLeft / 15) * 100))}%` }} /></div><div className="choices">{options.map((option, index) => <button className="word-choice-card" type="button" key={option} onClick={() => onChoose(option)}><small>OPTION {index + 1} · UP TO 700 PTS</small><span>{option}</span></button>)}</div></div>
-							: <span className="badge">{phase === 'drawing' ? (timeLeft < 15 ? 'LAST CHANCE' : 'KEEP GUESSING') : 'NEXT ROUND'}</span>}
+							? <div className="word-choice-controls"><div className="choice-time" role="status"><span>Choose in</span><b>{choiceTimeLeft}s</b></div><div className="choice-progress"><span style={{ width: `${Math.max(0, Math.min(100, (choiceTimeLeft / 15) * 100))}%` }} /></div><div className="choices">{options.map((option, index) => <button className="word-choice-card" type="button" key={option} onClick={() => onChoose(option)}><small>OPTION {index + 1}</small><span>{option}</span></button>)}</div></div>
+							: null}
 					</div>
 					<Canvas strokes={strokes} onStroke={onStroke} onClear={onClear} onUndo={onUndo} onRedo={onRedo} canRedo={canRedo} disabled={!drawer || phase !== 'drawing'} />
 					<div className="under"><span><b>HINT</b> {settings.hints ? 'Letters may appear as time runs out.' : 'Hints disabled.'}</span><button aria-label={muted ? 'Unmute sounds' : 'Mute sounds'} aria-pressed={!muted} onClick={() => { const nextMuted = !muted; setMuted(nextMuted); setAudioMuted(nextMuted); if (!nextMuted) playAudioCue('click'); }}><Volume2 size={14} />{muted ? 'Sound off' : 'Sound on'}</button></div>
