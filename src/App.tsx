@@ -5,7 +5,7 @@ import { Home } from './pages/Home';
 import { Lobby } from './pages/Lobby';
 import { Results } from './pages/Results';
 import { useGame } from './hooks/useGame';
-import type { GameSettings, Screen } from './types/game';
+import type { GameSettings, RoomVisibility, Screen } from './types/game';
 
 const defaults: GameSettings = {
 	rounds: 5,
@@ -34,8 +34,8 @@ export default function App() {
 		}
 	}, [game.connectionStatus, game.room]);
 
-	function create(nextSettings: GameSettings) {
-		game.createRoom(nextSettings);
+	function create(nextSettings: GameSettings, room: { name?: string; visibility?: RoomVisibility }) {
+		game.createRoom(nextSettings, room);
 	}
 
 	function join(code: string) {

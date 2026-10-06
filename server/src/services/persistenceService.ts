@@ -5,6 +5,7 @@ import { ProfileRepository, type LeaderboardOrder } from '../repositories/profil
 import { RoomRepository } from '../repositories/roomRepository.js';
 
 export class PersistenceService {
+	private persistenceReady = false;
 	private readonly profiles = new ProfileRepository(prisma);
 	private readonly rooms = new RoomRepository(prisma);
 	private readonly games = new GameRepository(prisma);
@@ -12,7 +13,7 @@ export class PersistenceService {
 	private readonly roomQueues = new Map<string, Promise<void>>();
 
 	get configured() {
-		return databaseConfigured;
+		return databaseConfigured && this.persistenceReady;
 	}
 
 	health() {
@@ -23,12 +24,14 @@ export class PersistenceService {
 		if (!databaseConfigured) return;
 		try {
 			await this.rooms.expireOrphanedRooms();
+			this.persistenceReady = true;
 		} catch (error) {
 			console.error('Could not expire rooms from a previous server process.', error);
 		}
 	}
 
 	async ensureProfile(userId: string, sessionId: string, username: string, avatar: string) {
+		if (!this.persistenceReady) return;
 		try {
 			await this.profiles.upsertIdentity(userId, sessionId, username, avatar);
 		} catch (error) {
@@ -37,6 +40,7 @@ export class PersistenceService {
 	}
 
 	async saveRoom(room: Room) {
+		if (!this.persistenceReady) return;
 		await this.enqueue(room.code, async () => {
 			try {
 				await this.rooms.save(room);
@@ -47,6 +51,7 @@ export class PersistenceService {
 	}
 
 	async expireRoom(code: string) {
+		if (!this.persistenceReady) return;
 		try {
 			await this.rooms.expireRoom(code);
 		} catch (error) {
@@ -55,6 +60,7 @@ export class PersistenceService {
 	}
 
 	startGame(room: Room) {
+		if (!this.persistenceReady) return Promise.resolve();
 		return this.enqueue(room.code, async () => {
 			try {
 				for (const player of room.players) {
@@ -70,6 +76,7 @@ export class PersistenceService {
 	}
 
 	saveRound(room: Room) {
+		if (!this.persistenceReady) return Promise.resolve();
 		return this.enqueue(room.code, async () => {
 			try {
 				const gameId = this.gameIds.get(room.code);
@@ -82,6 +89,7 @@ export class PersistenceService {
 	}
 
 	finishGame(room: Room) {
+		if (!this.persistenceReady) return Promise.resolve();
 		return this.enqueue(room.code, async () => {
 			try {
 				const gameId = this.gameIds.get(room.code);

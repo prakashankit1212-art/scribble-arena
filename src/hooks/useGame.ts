@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChatMessage, GameSettings, Phase, Player, RoomState, RoundSummary, ScoreFeedback, Screen, Stroke } from '../types/game';
-import { getGameSocket, getSessionId, getStoredRoomCode, storeRoomCode, type GameSocket, type RoundStart } from '../services/socket';
+import { getGameSocket, getProfileId, getSessionId, getStoredRoomCode, storeRoomCode, type GameSocket, type RoundStart } from '../services/socket';
 export function useGame(name: string, initialSettings: GameSettings, setScreen: (screen: Screen) => void) {
 	const [room, setRoom] = useState<RoomState | null>(null);
 	const [yourPlayerId, setYourPlayerId] = useState<string | null>(null);
@@ -250,12 +250,12 @@ export function useGame(name: string, initialSettings: GameSettings, setScreen: 
 		return true;
 	}
 
-	function createRoom(nextSettings: GameSettings) {
-		if (emit('room:create', { name: name.trim(), settings: nextSettings })) setPending('create');
+	function createRoom(nextSettings: GameSettings, roomDetails: { name?: string; visibility?: RoomState['visibility'] } = {}) {
+		if (emit('room:create', { name: name.trim(), profileId: getProfileId(), roomName: roomDetails.name, visibility: roomDetails.visibility, settings: nextSettings })) setPending('create');
 	}
 
 	function joinRoom(roomCode: string) {
-		if (emit('room:join', { roomCode: roomCode.trim().toUpperCase(), name: name.trim(), sessionId: getSessionId() })) setPending('join');
+		if (emit('room:join', { roomCode: roomCode.trim().toUpperCase(), name: name.trim(), profileId: getProfileId(), sessionId: getSessionId() })) setPending('join');
 	}
 
 	function leaveRoom() {

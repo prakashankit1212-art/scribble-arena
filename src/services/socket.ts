@@ -1,9 +1,9 @@
 import { io, type Socket } from 'socket.io-client';
-import type { GameSettings, Player, Point, RoomState, RoundSummary, Stroke } from '../types/game';
+import type { GameSettings, Player, Point, RoomState, RoomVisibility, RoundSummary, Stroke } from '../types/game';
 
 type ClientToServerEvents = {
-	'room:create': (payload: { name: string; settings: GameSettings }) => void;
-	'room:join': (payload: { roomCode: string; name: string; sessionId: string }) => void;
+	'room:create': (payload: { name: string; profileId: string; roomName?: string; visibility?: RoomVisibility; settings: GameSettings }) => void;
+	'room:join': (payload: { roomCode: string; name: string; profileId: string; sessionId: string }) => void;
 	'room:reconnect': (payload: { roomCode: string; sessionId: string }) => void;
 	'room:leave': () => void;
 	'room:update-settings': (payload: { settings: GameSettings }) => void;
@@ -66,6 +66,7 @@ type ChatMessageType = 'guess' | 'correct' | 'system';
 export type GameSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
 const SESSION_KEY = 'scribble-arena:session-id';
+const PROFILE_KEY = 'scribble-arena:profile-id';
 const TAB_KEY = 'scribble-arena:tab-id';
 const ROOM_KEY = 'scribble-arena:room-code';
 let socket: GameSocket | null = null;
@@ -106,4 +107,13 @@ export function getGameSocket() {
 	}
 	socket.auth = { sessionId: getSessionId() };
 	return socket;
+}
+
+export function getProfileId() {
+	let profileId = window.localStorage.getItem(PROFILE_KEY);
+	if (!profileId) {
+		profileId = window.crypto.randomUUID();
+		window.localStorage.setItem(PROFILE_KEY, profileId);
+	}
+	return profileId;
 }

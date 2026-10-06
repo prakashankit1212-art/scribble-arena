@@ -1,6 +1,7 @@
 export type Screen = 'home' | 'lobby' | 'game' | 'results';
 export type Phase = 'lobby' | 'word-choice' | 'drawing' | 'round-end' | 'finished';
 export type ServerPhase = 'LOBBY' | 'WORD_CHOICE' | 'DRAWING' | 'ROUND_END' | 'FINISHED';
+export type RoomVisibility = 'PRIVATE' | 'PUBLIC';
 
 export interface GameSettings {
 	rounds: number;
@@ -69,6 +70,8 @@ export interface Stroke {
 
 export interface RoomState {
 	code: string;
+	name: string;
+	visibility: RoomVisibility;
 	hostId: string;
 	players: Player[];
 	settings: GameSettings;

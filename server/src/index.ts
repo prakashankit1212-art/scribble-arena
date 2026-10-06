@@ -23,8 +23,8 @@ app.use(express.json({ limit: '32kb' }));
 
 app.get('/health', async (_request, response) => {
 	const database = await checkDatabase();
-	response.status(database === 'connected' ? 200 : 503).json({
-		ok: database === 'connected',
+	response.status(200).json({
+		ok: true,
 		service: 'scribble-arena-server',
 		database,
 	});

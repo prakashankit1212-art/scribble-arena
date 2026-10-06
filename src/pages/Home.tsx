@@ -2,7 +2,7 @@ import { ArrowRight, Check, Gamepad2, RotateCcw, ShieldCheck, Users, X } from 'l
 import { useEffect, useState } from 'react';
 import { Button } from '../components/Button';
 import { Logo } from '../components/Logo';
-import type { GameSettings } from '../types/game';
+import type { GameSettings, RoomVisibility } from '../types/game';
 
 const DEFAULT_SETTINGS: GameSettings = { rounds: 5, drawTime: 80, maxPlayers: 10, hints: true, difficulty: 'mixed' };
 const ROOM_CODE_PATTERN = /^[A-Z2-9]{5}$/;
@@ -10,7 +10,7 @@ const ROOM_CODE_PATTERN = /^[A-Z2-9]{5}$/;
 interface HomeProps {
 	name: string;
 	setName: (name: string) => void;
-	create: (settings: GameSettings) => void;
+	create: (settings: GameSettings, room: { name?: string; visibility?: RoomVisibility }) => void;
 	join: (code: string) => void;
 	pending?: 'create' | 'join' | 'start' | null;
 	connected?: boolean;
@@ -19,6 +19,8 @@ interface HomeProps {
 export function Home({ name, setName, create, join, pending = null, connected = true }: HomeProps) {
 	const [code, setCode] = useState(() => new URLSearchParams(window.location.search).get('room')?.toUpperCase() ?? '');
 	const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+	const [roomName, setRoomName] = useState('');
+	const [visibility, setVisibility] = useState<RoomVisibility>('PRIVATE');
 	const [settingsOpen, setSettingsOpen] = useState(false);
 	const [formError, setFormError] = useState('');
 	const validName = name.trim().length > 0 && name.trim().length <= 18 && !/[<>\u0000-\u001f]/.test(name);
@@ -65,7 +67,7 @@ export function Home({ name, setName, create, join, pending = null, connected = 
 			return;
 		}
 		setSettingsOpen(false);
-		create(settings);
+		create(settings, { name: roomName.trim() || undefined, visibility });
 	}
 
 	return (
@@ -104,6 +106,8 @@ export function Home({ name, setName, create, join, pending = null, connected = 
 					<header><div><small className="eyebrow">NEW ROOM</small><h2 id="settings-title">Set the rules</h2></div><button type="button" aria-label="Close settings" onClick={() => setSettingsOpen(false)}><X size={18} /></button></header>
 					<p>Choose the pace. You can fine-tune it again in the lobby.</p>
 					<label>Rounds<select value={settings.rounds} onChange={(event) => setSettings({ ...settings, rounds: Number(event.target.value) })}><option value="3">3 rounds</option><option value="5">5 rounds</option><option value="7">7 rounds</option></select></label>
+					<label>Room name<input value={roomName} maxLength={40} onChange={(event) => setRoomName(event.target.value)} placeholder={`${name.trim() || 'Your'}'s room`} /></label>
+					<label>Visibility<select value={visibility} onChange={(event) => setVisibility(event.target.value as RoomVisibility)}><option value="PRIVATE">Private — invite only</option><option value="PUBLIC">Public — listed in the arena</option></select></label>
 					<label>Draw time<select value={settings.drawTime} onChange={(event) => setSettings({ ...settings, drawTime: Number(event.target.value) })}><option value="45">45 seconds</option><option value="60">60 seconds</option><option value="80">80 seconds</option><option value="120">120 seconds</option></select></label>
 					<label>Player limit<select value={settings.maxPlayers} onChange={(event) => setSettings({ ...settings, maxPlayers: Number(event.target.value) })}><option value="4">4 players</option><option value="6">6 players</option><option value="8">8 players</option><option value="10">10 players</option></select></label>
 					<label>Difficulty<select value={settings.difficulty} onChange={(event) => setSettings({ ...settings, difficulty: event.target.value as GameSettings['difficulty'] })}><option value="easy">Easy</option><option value="mixed">Mixed</option><option value="hard">Hard</option></select></label>
