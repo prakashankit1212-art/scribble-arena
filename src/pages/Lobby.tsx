@@ -63,7 +63,7 @@ export function Lobby({ code, items, settings, setSettings, start, onReady, onLe
 						<header><div><h3>Players</h3><small>{connectedCount < 2 ? 'Waiting for players...' : 'Your room is ready.'}</small></div><Crown size={19} /></header>
 						<Players items={items} feedback={scoreFeedback} />
 						{emptySlots > 0 && <div className="empty-slots" aria-label={`${emptySlots} open player slots`}>{Array.from({ length: emptySlots }, (_, index) => <div className="empty-player" key={index}><span>+</span><small>Open seat</small></div>)}</div>}
-						<div className="invite"><Link2 size={17} /><div><b>Invite friends</b><p>Share room code <strong>{code}</strong> or copy an invite link.</p></div></div>
+						<div className="invite"><Link2 size={17} /><div><b>Invite friends</b><p>Share room code <strong>{code}</strong> or copy an invite link.</p></div><button type="button" className="invite-copy" onClick={copyInvite}>{copied === 'link' ? <><Check size={14} />Copied</> : <><Copy size={14} />Copy link</>}</button></div>
 					</div>
 				</section>
 				<aside className="card settings lobby-settings">

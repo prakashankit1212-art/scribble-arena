@@ -114,7 +114,7 @@ export function Canvas({ strokes, onStroke, onClear, onUndo, onRedo, canRedo, di
 				<canvas
 					ref={canvasRef}
 					className={disabled ? 'disabled' : ''}
-					aria-label="Drawing canvas. Use the tools below to draw."
+					aria-label={disabled ? 'Drawing canvas. Watch the current drawer.' : 'Drawing canvas. Use the tools below to draw.'}
 					aria-disabled={disabled}
 					onPointerDown={(event) => {
 						if (disabled) return;
@@ -140,7 +140,7 @@ export function Canvas({ strokes, onStroke, onClear, onUndo, onRedo, canRedo, di
 				/>
 				<span ref={cursorRef} className="brush-cursor" aria-hidden="true" />
 			</div>
-			<div className="tools" aria-label="Drawing tools">
+			{!disabled && <div className="tools" aria-label="Drawing tools">
 				<div className="tool-group" role="group" aria-label="Tool">
 					<button type="button" aria-label="Pen" title="Pen" aria-pressed={tool === 'pen'} className={tool === 'pen' ? 'active' : ''} disabled={disabled} onClick={() => setTool('pen')}><Paintbrush size={16} /></button>
 					<button type="button" aria-label="Eraser" title="Eraser" aria-pressed={tool === 'eraser'} className={tool === 'eraser' ? 'active' : ''} disabled={disabled} onClick={() => setTool('eraser')}><Eraser size={16} /></button>
@@ -160,7 +160,7 @@ export function Canvas({ strokes, onStroke, onClear, onUndo, onRedo, canRedo, di
 					<button type="button" aria-label="Redo" title="Redo" disabled={disabled || !canRedo} onClick={onRedo}><Redo2 size={16} /></button>
 				</div>
 				<button type="button" aria-label="Clear canvas" title="Clear canvas" disabled={disabled || strokes.length === 0} onClick={onClear}><Trash2 size={16} /></button>
-			</div>
+			</div>}
 		</div>
 	);
 }

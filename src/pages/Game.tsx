@@ -4,6 +4,7 @@ import { Button } from '../components/Button';
 import { Canvas } from '../components/Canvas';
 import { Chat } from '../components/Chat';
 import { copyText } from '../lib/clipboard';
+import { DrawerIndicator } from '../components/DrawerIndicator';
 import { Logo } from '../components/Logo';
 import { Players } from '../components/Players';
 import { isAudioMuted, playAudioCue, setAudioMuted } from '../services/audioService';
@@ -68,6 +69,7 @@ export function Game({
 	const [muted, setMuted] = useState(isAudioMuted);
 	const [copiedCode, setCopiedCode] = useState(false);
 	const drawer = Boolean(items[0]?.isDrawer);
+	const currentDrawer = items.find((player) => player.isDrawer);
 	const timerClass = timeLeft <= 5 ? 'timer-critical' : timeLeft <= 15 ? 'timer-warning' : '';
 	const drawerName = items.find((player) => player.id === items.find((candidate) => candidate.isDrawer)?.id)?.name;
 
@@ -137,6 +139,7 @@ export function Game({
 				<section className="center">
 					<div className="word">
 						<div>
+							{currentDrawer && <DrawerIndicator player={currentDrawer} />}
 							<small>{phase === 'word-choice' ? (drawer ? 'CHOOSE YOUR WORD' : `${drawerName ?? 'The drawer'} is choosing a word`) : phase === 'drawing' ? (drawer ? 'YOUR WORD' : 'GUESS THE WORD') : 'ROUND COMPLETE'}</small>
 							<strong>{word || (phase === 'word-choice' && !drawer ? 'Waiting for the drawer...' : phase === 'word-choice' ? 'Select one to begin' : 'Get ready')}</strong>
 						</div>
